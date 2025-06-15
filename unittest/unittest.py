@@ -8,7 +8,7 @@ class TestFlaskApp(unittest.TestCase):
     def test_welcome_message(self):
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Welcome to my learning world", response.data)
+        self.assertIn(b"Welcome to my learning world v1.0!", response.data)
 
 if __name__ == '__main__':
     unittest.main()
