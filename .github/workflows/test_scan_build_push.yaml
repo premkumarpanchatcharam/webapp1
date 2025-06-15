@@ -1,0 +1,50 @@
+name: Test and Push Flask App
+
+on:
+  push:
+    branches: [ gcp-release]
+
+jobs:
+  test-scan-build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Unit Tests
+        id: run_tests
+        continue-on-error: true
+        run: |
+          python -m unittest discover -s test
+
+      - name: Handle Test Failure
+        if: steps.run_tests.outcome == 'failure'
+        run: |
+          echo "❌ Unit tests failed. Skipping build and push."
+          exit 1
+
+      # - name: Authenticate to Google Cloud
+      #   uses: google-github-actions/auth@v2
+      #   with:
+      #     credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      # - name: Configure Docker for Artifact Registry
+      #   run: |
+      #     gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+
+      # - name: Build and Push Docker Image
+      #   run: |
+      #     IMAGE_NAME=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_ARTIFACT_REPO }}/flask-app
+      #     docker build -t $IMAGE_NAME:latest .
+      #     docker push $IMAGE_NAME:latest
